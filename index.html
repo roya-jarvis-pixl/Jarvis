@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="fa" dir="rtl"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<title>Jarvis</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Jarvis">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<link rel="apple-touch-icon" href="https://n8n-hqf5.srv2077308.hstgr.cloud/webhook/jarvis-c57888b34791a53b/eye">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+:root{--void:#020104;--ink:#efeaff;--dim:#8a84a8;--line:rgba(255,255,255,.16);--on:#7fe3ff}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0;background:var(--void);color:var(--ink);font-family:system-ui,-apple-system,Tahoma,sans-serif;overflow:hidden}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+.bar{position:fixed;left:0;right:0;bottom:0;padding:0 max(14px,env(safe-area-inset-left)) calc(16px + env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-right));display:flex;flex-direction:column;gap:10px}
+#say{min-height:1.4em;max-height:30vh;overflow:auto;text-align:center;font-size:15px;line-height:1.6;color:#dfe9ff;text-shadow:0 1px 8px #000;padding:0 6px}
+.row{display:flex;gap:8px;align-items:center}
+#t{flex:1;min-width:0;font-size:16px;color:var(--ink);background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:22px;padding:11px 16px;outline:none}
+button{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--on);background:rgba(127,227,255,.12);color:var(--on);font-size:20px;cursor:pointer}
+button.rec{background:#ff3b5c;border-color:#ff3b5c;color:#fff}
+button:disabled{opacity:.4}
+#st{font-size:12px;color:var(--dim);text-align:center;margin:0}
+</style></head><body>
+<canvas id="c"></canvas>
+<div class="bar">
+  <div id="say"></div>
+  <p id="st">با جارویس حرف بزن یا بنویس</p>
+  <div class="row">
+    <button id="mic" type="button" aria-label="mic">🎙</button>
+    <input id="t" type="text" placeholder="پیام به جارویس…" autocomplete="off">
+    <button id="send" type="button" aria-label="send">➤</button>
+  </div>
+</div>
+<script>
+var TG=window.Telegram&&Telegram.WebApp; try{TG.ready();TG.expand();TG.setHeaderColor&&TG.setHeaderColor('#020104');TG.setBackgroundColor&&TG.setBackgroundColor('#020104');}catch(e){}
+var BASE='https://n8n-hqf5.srv2077308.hstgr.cloud/webhook/jarvis-c57888b34791a53b';
+var cv=document.getElementById('c'),x=cv.getContext('2d'),W,H;
+function size(){var D=Math.min(devicePixelRatio||1,2);W=cv.width=innerWidth*D;H=cv.height=innerHeight*D;}
+addEventListener('resize',size);size();
+var img=new Image();img.src=BASE+'/eye';
+var PX=0.503,PY=0.45;
+var level=0,target=0,analyser=null,buf=null,thinking=false;
+function frame(ms){
+  var t=ms/1000;
+  if(analyser){analyser.getByteTimeDomainData(buf);var s=0;for(var i=0;i<buf.length;i++){var v=(buf[i]-128)/128;s+=v*v;}target=Math.min(1,Math.sqrt(s/buf.length)*4.5);}
+  else if(thinking){target=.18+.1*Math.sin(t*5);}
+  else target=.05+.04*Math.sin(t*1.1);
+  level+=(target-level)*(target>level?.35:.1);
+  var m=Math.min(W,H*.78),cx=W/2,cy=H*.40,S=m*1.02*(1+level*.07+.008*Math.sin(t*1.2));
+  x.globalCompositeOperation='source-over';x.fillStyle='#020104';x.fillRect(0,0,W,H);
+  if(img.complete&&img.naturalWidth){
+    var dx=Math.sin(t*.35)*S*.006,dy=Math.cos(t*.27)*S*.004,ox=cx-S/2+dx,oy=cy-S/2+dy;
+    x.drawImage(img,ox,oy,S,S);
+    x.globalCompositeOperation='lighter';x.globalAlpha=.10+level*.5;var S2=S*(1.015+level*.03);
+    x.drawImage(img,cx-S2/2+dx,cy-S2/2+dy,S2,S2);x.globalAlpha=1;
+    var ix=ox+S*PX,iy=oy+S*PY,g=x.createRadialGradient(ix,iy,0,ix,iy,S*.11);
+    g.addColorStop(0,'rgba(170,240,255,'+(level*.35)+')');g.addColorStop(.5,'rgba(120,190,255,'+(level*.22)+')');g.addColorStop(1,'rgba(0,0,0,0)');
+    x.fillStyle=g;x.beginPath();x.arc(ix,iy,S*.11,0,6.2832);x.fill();
+    for(var k=0;k<3;k++){var p=((t*.5+k/3)%1);x.beginPath();x.arc(ix,iy,S*(.14+p*.38),0,6.2832);x.strokeStyle='rgba(110,210,255,'+((1-p)*.16*(.2+level*1.4))+')';x.lineWidth=S*.004;x.stroke();}
+    x.globalCompositeOperation='source-over';
+    g=x.createRadialGradient(cx,cy,S*.26,cx,cy,S*.5);g.addColorStop(0,'rgba(2,1,4,0)');g.addColorStop(1,'rgba(2,1,4,1)');x.fillStyle=g;x.fillRect(0,0,W,H);
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+var st=document.getElementById('st'),say=document.getElementById('say'),t=document.getElementById('t'),sendB=document.getElementById('send'),micB=document.getElementById('mic');
+var actx=null,rec=null,chunks=[];
+function aS(m){try{if(navigator.audioSession)navigator.audioSession.type=m;}catch(e){}}
+function ctx(keep){if(!keep)aS('playback');if(!actx){var A=window.AudioContext||window.webkitAudioContext;actx=new A();}if(actx.state==='suspended')actx.resume();return actx;}
+var KEY=new URLSearchParams(location.search).get('k')||'';try{if(KEY)localStorage.setItem('jk',KEY);else KEY=localStorage.getItem('jk')||'';}catch(e){}
+var inTG=!!(TG&&TG.initData);
+function uid(){try{return String(TG.initDataUnsafe.user.id)}catch(e){return ''}}
+function busy(b){thinking=b;sendB.disabled=b;micB.disabled=b;st.textContent=b?'جارویس فکر می‌کند…':'با جارویس حرف بزن یا بنویس';}
+function play(b64){
+  var bin=atob(b64),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);
+  var c=ctx();
+  if(!navigator.audioSession){var au=new Audio('data:audio/mpeg;base64,'+b64);au.setAttribute('playsinline','');thinking=true;st.textContent='جارویس حرف می‌زند…';
+    au.onended=au.onerror=function(){thinking=false;st.textContent='با جارویس حرف بزن یا بنویس';};au.play().catch(function(){thinking=false;st.textContent='برای شنیدن، دوباره بنویس';});return;}
+  c.decodeAudioData(u.buffer,function(ab){
+    var src=c.createBufferSource();src.buffer=ab;analyser=c.createAnalyser();analyser.fftSize=1024;buf=new Uint8Array(analyser.fftSize);
+    src.connect(analyser);analyser.connect(c.destination);st.textContent='جارویس حرف می‌زند…';
+    src.onended=function(){analyser=null;st.textContent='با جارویس حرف بزن یا بنویس';};src.start();
+  },function(){st.textContent='صدا پخش نشد';});
+}
+function ask(payload){
+  busy(true);payload.uid=uid();payload.initData=(TG&&TG.initData)||'';payload.key=KEY;
+  fetch(BASE+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)})
+  .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(d){busy(false);say.textContent=d.text||'';if(d.audio)play(d.audio);})
+  .catch(function(e){busy(false);st.textContent='مشکلی پیش آمد، دوباره امتحان کن ('+e.message+')';});
+}
+sendB.onclick=function(){var v=t.value.trim();if(!v)return;ctx();t.value='';say.textContent='';ask({text:v});};
+t.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();sendB.onclick();}});
+var STEP='';
+function micFail(er){aS('auto');micB.classList.remove('rec');st.textContent=(inTG?'میکروفون در تلگرام باز نشد؛ جارویس را از Safari باز کن':'میکروفون کار نکرد، لطفاً بنویس')+' ['+((er&&er.name)||er||'')+']';}
+function startRec(s){
+  STEP='rec1';chunks=[];var mt='';try{mt=MediaRecorder.isTypeSupported('audio/mp4')?'audio/mp4':(MediaRecorder.isTypeSupported('audio/webm')?'audio/webm':'');}catch(e){}
+  STEP='rec2:'+mt;try{rec=mt?new MediaRecorder(s,{mimeType:mt}):new MediaRecorder(s);}catch(e){rec=new MediaRecorder(s);}
+  STEP='rec3';rec.ondataavailable=function(e){if(e.data&&e.data.size)chunks.push(e.data);};
+  rec.onstop=function(){s.getTracks().forEach(function(k){k.stop()});micB.classList.remove('rec');aS('playback');
+    var ty=(rec.mimeType||mt||'audio/mp4').split(';')[0],b=new Blob(chunks,{type:ty}),fr=new FileReader();
+    fr.onload=function(){var b64=String(fr.result).split(',')[1];say.textContent='';ask({audio:b64,mime:ty});};fr.readAsDataURL(b);};
+  STEP='rec4';rec.start();micB.classList.add('rec');st.textContent='دارم گوش می‌دهم… برای تمام کردن دوباره بزن';
+}
+micB.onclick=function(){
+  if(rec&&rec.state==='recording'){rec.stop();return;}
+  STEP='m0';try{ctx(true);}catch(e){}
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia||!window.MediaRecorder){micFail('no-api');return;}
+  aS('auto');STEP='gum1';
+  navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(function(s){try{startRec(s);}catch(e){micFail(e);}},function(er){
+    STEP='gum2:'+(er&&er.name);aS('play-and-record');navigator.mediaDevices.getUserMedia({audio:true}).then(function(s){try{startRec(s);}catch(e){micFail(e);}},micFail);});
+};
+</script></body></html>
