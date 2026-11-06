@@ -35,6 +35,7 @@ button:disabled{opacity:.4}
 </div>
 <script>
 var TG=window.Telegram&&Telegram.WebApp; try{TG.ready();TG.expand();TG.setHeaderColor&&TG.setHeaderColor('#020104');TG.setBackgroundColor&&TG.setBackgroundColor('#020104');}catch(e){}
+try{if(/desktop|web|macos/.test(TG.platform)&&TG.isVersionAtLeast('8.0'))TG.requestFullscreen();}catch(e){}
 var BASE='https://n8n-hqf5.srv2077308.hstgr.cloud/webhook/jarvis-c57888b34791a53b';
 var cv=document.getElementById('c'),x=cv.getContext('2d'),W,H;
 function size(){var D=Math.min(devicePixelRatio||1,2);W=cv.width=innerWidth*D;H=cv.height=innerHeight*D;}
